@@ -5,7 +5,7 @@ using UnityEngine.Playables;
 using UnityEngine.Animations;
 using UnityEngine.Audio;
 
-namespace AnimationEngine
+namespace Animations
 {
     [RequireComponent(typeof(Animator))]
     [RequireComponent(typeof(AudioSource))]
@@ -29,17 +29,11 @@ namespace AnimationEngine
         // Animation component list will be play.
         private List<AnimationComponent> currentAnimationList;
 
-        // Current playing animation component.
-        private AnimationComponent firstAnimation = null;
-
-        // Next playing animation component.
-        private AnimationComponent secondAnimation = null;
-
         // Tag for debugging.
         private const string TAG = "[AnimationEngine]";
 
         // Use this for initialization
-        private void Start()
+        private void Awake()
         {
             // Create playable graph.
             playableGraph = PlayableGraph.Create();
@@ -91,7 +85,7 @@ namespace AnimationEngine
             playableGraph.Play();
 
             // Register graph visual client to show debug messages.
-            // GraphVisualizerClient.Show(playableGraph, "Animation Engine Graph");
+             GraphVisualizerClient.Show(playableGraph, "Animation Engine Graph");
         }
 
         // Update is called once per frame
@@ -101,6 +95,13 @@ namespace AnimationEngine
             {
                 // No valid clip input.
                 return;
+            }
+
+            AnimationComponent firstAnimation = currentAnimationList[0];
+            AnimationComponent secondAnimation = null;
+            if (currentAnimationList.Count >= 2)
+            {
+                secondAnimation = currentAnimationList[1];
             }
 
             if (firstAnimation != null)
@@ -116,20 +117,14 @@ namespace AnimationEngine
                     case AnimationComponent.Status.Done:
                         if (currentAnimationList.Count == 1)
                         {
-                            firstAnimation.Reset();
+                            firstAnimation
+                                .SetStartBlendingTime(-1.0f)
+                                .SetEndBlendingTime(99999.0f)
+                                .Reset();
                         }
                         else if (currentAnimationList.Count >= 2)
                         {
                             currentAnimationList.Remove(firstAnimation);
-                            firstAnimation = currentAnimationList[0];
-                            if (currentAnimationList.Count >= 2)
-                            {
-                                secondAnimation = currentAnimationList[1];
-                            }
-                            else
-                            {
-                                secondAnimation = null;
-                            }
                         }
                         break;
                 }
@@ -168,12 +163,17 @@ namespace AnimationEngine
             }
             for (int index = 0; index < animations.Length; index++)
             {
+                int animationIndex = animations[index];
                 int audioIndex = -1;
                 if (audios != null && index < audios.Length)
                 {
                     audioIndex = audios[index];
                 }
-                AnimationComponent component = new AnimationComponent(animationMixer, audioMixer, index, audioIndex);
+                AnimationComponent component = new AnimationComponent(
+                    animationMixer,
+                    audioMixer,
+                    animationIndex,
+                    audioIndex);
                 currentAnimationList.Add(component);
             }
         }

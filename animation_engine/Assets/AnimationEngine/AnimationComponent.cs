@@ -3,7 +3,7 @@ using UnityEngine.Playables;
 using UnityEngine.Animations;
 using UnityEngine.Audio;
 
-namespace AnimationEngine
+namespace Animations
 {
     /// <summary>
     /// Animation Component.
@@ -52,7 +52,10 @@ namespace AnimationEngine
         private const float DEFAULT_START_BLENDING_PERCENTAGE = 0.25f;
         private const float DEFAULT_END_BLENDING_PERCENTAGE = 0.75f;
 
-        public AnimationComponent(AnimationMixerPlayable animationMixer, AudioMixerPlayable audioMixer, int animation, int audio = -1)
+        public AnimationComponent(AnimationMixerPlayable animationMixer,
+                                  AudioMixerPlayable audioMixer,
+                                  int animation,
+                                  int audio = -1)
         {
             this.animationMixer = animationMixer;
             this.audioMixer = audioMixer;
@@ -62,12 +65,15 @@ namespace AnimationEngine
             var clip = (AnimationClipPlayable)animationMixer.GetInput(animationIndex);
             // Calculate time for processing current clip.
             totalTime = clip.GetAnimationClip().length;
+            // Reset the time so that the clip starts at the correct position.
+            clip.SetTime(0);
+            // Reverse the animation if necessary.
+            clip.SetSpeed(speed);
         }
 
         public void Reset()
         {
-            startBlendingStep = -1.0f;
-            endBlendingTime = 99999.0f;
+            processingTime = 0.0f;
             status = Status.Pending;
         }
 
@@ -78,16 +84,10 @@ namespace AnimationEngine
                 return;
             }
 
-            var clip = (AnimationClipPlayable)animationMixer.GetInput(animationIndex);
-            // Reset the time so that the clip starts at the correct position.
-            clip.SetTime(0);
-            // Reverse the animation if necessary.
-            clip.SetSpeed(speed);
-
             if (startBlendingTime <= 0.0f)
             {
                 // Move weight to 1 directly.
-                animationMixer.SetInputWeight(animationIndex, 1.0f);
+                weight = 1.0f;
             }
             else
             {
@@ -118,6 +118,11 @@ namespace AnimationEngine
                     canStartNextClip = true;
                 }
                 weight -= endBlendingStep;
+                if (processingTime >= totalTime)
+                {
+                    // Make sure we clean current animation clip.
+                    weight = 0.0f;
+                }
             }
             else if (processingTime < startBlendingTime)
             {
@@ -128,8 +133,6 @@ namespace AnimationEngine
 
             if (processingTime >= totalTime)
             {
-                // Make sure we clean current animation clip.
-                animationMixer.SetInputWeight(animationIndex, 0.0f);
                 status = Status.Done;
             }
         }
@@ -140,29 +143,27 @@ namespace AnimationEngine
             return this;
         }
 
-        public AnimationComponent SetStartBlendingTime(float blendingTime = -1.0f)
+        public AnimationComponent SetStartBlendingTime()
         {
-            if (blendingTime > 0.0f)
-            {
-                this.startBlendingTime = blendingTime;
-            }
-            else
-            {
-                this.startBlendingTime = totalTime * DEFAULT_START_BLENDING_PERCENTAGE;
-            }
+            this.startBlendingTime = totalTime * DEFAULT_START_BLENDING_PERCENTAGE;
             return this;
         }
 
-        public AnimationComponent SetEndBlendingTime(float blendingTime = -1.0f)
+        public AnimationComponent SetStartBlendingTime(float blendingTime)
         {
-            if (blendingTime > 0.0f)
-            {
-                this.endBlendingTime = blendingTime;
-            }
-            else
-            {
-                this.endBlendingTime = totalTime * DEFAULT_END_BLENDING_PERCENTAGE;
-            }
+            this.startBlendingTime = blendingTime;
+            return this;
+        }
+
+        public AnimationComponent SetEndBlendingTime()
+        {
+            this.endBlendingTime = totalTime * DEFAULT_END_BLENDING_PERCENTAGE;
+            return this;
+        }
+
+        public AnimationComponent SetEndBlendingTime(float blendingTime)
+        {
+            this.endBlendingTime = blendingTime;
             return this;
         }
 
