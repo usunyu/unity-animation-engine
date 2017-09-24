@@ -1,2 +1,2 @@
-# animation-engine-unity-plugin
-Unity Animation Engine by Playable API
+# unity-animation-engine
+Unity Animation Engine powered by Playable API
