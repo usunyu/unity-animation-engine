@@ -28,5 +28,7 @@ The animation system already has a graph editing tool, it’s a state machine sy
 /// <param name="animations">Animation clips added.</param>
 /// <param name="audios">If not null, audio clips will be played with animation in samoe order.</param>
 /// <param name="queued">If true, new animations will be played after current animations.</param>
+```
+```
 AddAnimations(int[] animations, int[] audios = null, bool queued = true)
 ```
