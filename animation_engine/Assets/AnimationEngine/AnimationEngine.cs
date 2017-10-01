@@ -32,7 +32,9 @@ namespace Animations
         // Tag for debugging.
         private const string TAG = "[AnimationEngine]";
 
-        // Use this for initialization
+        /// <summary>
+        /// Use this for initialization
+        /// </summary>
         private void Awake()
         {
             // Create playable graph.
@@ -88,7 +90,9 @@ namespace Animations
             GraphVisualizerClient.Show(playableGraph, "Animation Engine Graph");
         }
 
-        // Update is called once per frame
+        /// <summary>
+        /// Update is called once per frame
+        /// </summary>
         private void Update()
         {
             if (animationMixer.GetInputCount() == 0 || currentAnimationList.Count == 0)
@@ -147,14 +151,21 @@ namespace Animations
             }
         }
 
-        // OnDisable is called when the behaviour becomes disabled () or inactive
+        /// <summary>
+        /// OnDisable is called when the behaviour becomes disabled () or inactive
+        /// </summary>
         private void OnDisable()
         {
             // Destroys all Playables and Outputs created by the graph.
             playableGraph.Destroy();
         }
 
-        // Add clip to pending animation list.
+        /// <summary>
+        /// Add amimation clip index to pending animation list, will be played one by one.
+        /// </summary>
+        /// <param name="animations">Animation clips added.</param>
+        /// <param name="audios">If not null, audio clips will be played with animation in samoe order.</param>
+        /// <param name="queued">If true, new animations will be played after current animations.</param>
         public void AddAnimations(int[] animations, int[] audios = null, bool queued = true)
         {
             if (!queued)
@@ -193,7 +204,9 @@ namespace Animations
             }
         }
 
-        // Clean current animation list in pending state.
+        /// <summary>
+        /// Clean current animation list in pending state.
+        /// </summary>
         private void CleanPendingAnimations()
         {
             if (currentAnimationList.Count < 2)
