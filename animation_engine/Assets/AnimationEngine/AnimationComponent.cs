@@ -38,8 +38,6 @@ namespace Animations
         //   startBlendingTime      endBlendingTime
         private float startBlendingTime = -1.0f;
         private float endBlendingTime = 99999.0f;
-        private float startBlendingStep = -1.0f;
-        private float endBlendingStep = -1.0f;
 
         private float processingTime = 0.0f;
         private float totalTime = 0.0f;
@@ -49,8 +47,7 @@ namespace Animations
 
         private Status status = Status.Pending;
 
-        private const float DEFAULT_START_BLENDING_PERCENTAGE = 0.25f;
-        private const float DEFAULT_END_BLENDING_PERCENTAGE = 0.75f;
+        private const float DEFAULT_BLENDING_TIME = 0.5f;
 
         public AnimationComponent(AnimationMixerPlayable animationMixer,
                                   AudioMixerPlayable audioMixer,
@@ -89,11 +86,6 @@ namespace Animations
                 // Move weight to 1 directly.
                 weight = 1.0f;
             }
-            else
-            {
-                // Calculate blending step.
-                startBlendingStep = 1.0f / startBlendingTime;
-            }
 
             status = Status.Processing;
         }
@@ -109,15 +101,11 @@ namespace Animations
 
             if (processingTime > endBlendingTime)
             {
-                if (endBlendingStep <= 0.0f)
-                {
-                    endBlendingStep = 1.0f / (totalTime - endBlendingTime);
-                }
                 if (!canStartNextClip)
                 {
                     canStartNextClip = true;
                 }
-                weight -= endBlendingStep;
+                weight = 1.0f - (processingTime - endBlendingTime) / (totalTime - endBlendingTime);
                 if (processingTime >= totalTime)
                 {
                     // Make sure we clean current animation clip.
@@ -126,7 +114,11 @@ namespace Animations
             }
             else if (processingTime < startBlendingTime)
             {
-                weight += startBlendingStep;
+                weight = processingTime / startBlendingTime;
+            }
+            else if (processingTime >= startBlendingTime)
+            {
+                weight = 1.0f;
             }
 
             animationMixer.SetInputWeight(animationIndex, weight);
@@ -145,7 +137,11 @@ namespace Animations
 
         public AnimationComponent SetStartBlendingTime()
         {
-            this.startBlendingTime = totalTime * DEFAULT_START_BLENDING_PERCENTAGE;
+            startBlendingTime = DEFAULT_BLENDING_TIME;
+            if (totalTime < DEFAULT_BLENDING_TIME)
+            {
+                startBlendingTime = totalTime;
+            }
             return this;
         }
 
@@ -157,7 +153,11 @@ namespace Animations
 
         public AnimationComponent SetEndBlendingTime()
         {
-            this.endBlendingTime = totalTime * DEFAULT_END_BLENDING_PERCENTAGE;
+            this.endBlendingTime = totalTime - DEFAULT_BLENDING_TIME;
+            if (totalTime < DEFAULT_BLENDING_TIME)
+            {
+                endBlendingTime = 0.0f;
+            }
             return this;
         }
 

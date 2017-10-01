@@ -85,7 +85,7 @@ namespace Animations
             playableGraph.Play();
 
             // Register graph visual client to show debug messages.
-             GraphVisualizerClient.Show(playableGraph, "Animation Engine Graph");
+            GraphVisualizerClient.Show(playableGraph, "Animation Engine Graph");
         }
 
         // Update is called once per frame
@@ -161,6 +161,11 @@ namespace Animations
             {
                 CleanPendingAnimations();
             }
+            if (currentAnimationList.Count > 0)
+            {
+                // Set last animation end blending time if existed.
+                currentAnimationList[currentAnimationList.Count - 1].SetEndBlendingTime();
+            }
             for (int index = 0; index < animations.Length; index++)
             {
                 int animationIndex = animations[index];
@@ -174,6 +179,16 @@ namespace Animations
                     audioMixer,
                     animationIndex,
                     audioIndex);
+                if (currentAnimationList.Count > 0)
+                {
+                    // Set animation start blending time.
+                    component.SetStartBlendingTime();
+                }
+                if (index < animations.Length - 1)
+                {
+                    // Set animation end blending time.
+                    component.SetEndBlendingTime();
+                }
                 currentAnimationList.Add(component);
             }
         }

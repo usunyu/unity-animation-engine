@@ -6,7 +6,6 @@ using Animations;
 [RequireComponent(typeof(AnimationEngine))]
 public class SampleScript : MonoBehaviour
 {
-
     AnimationEngine animationEngine;
 
     // Use this for initialization
@@ -14,7 +13,7 @@ public class SampleScript : MonoBehaviour
     {
         animationEngine = GetComponent<AnimationEngine>();
         // TODO, fix 0, 1
-        animationEngine.AddAnimations(new int[] { 1 });
+        animationEngine.AddAnimations(new int[] { 0, 1 });
     }
 
     // Update is called once per frame
